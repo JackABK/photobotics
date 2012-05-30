@@ -5,6 +5,14 @@
  *      Author: steve
  */
 
+extern	int initialisePWM(bool);
+extern	int initialiseSocket(void);
+
+int main(int argc, char* argv[]) {
+
+	initialisePWM(true);
+	initialiseSocket();
 
 
+}
 
