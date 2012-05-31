@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
 
 //Module Registers for PWM Initialisation
 #define CLCK_MOD_PER_REG_START	0x44E00000	// Address of the Clock Module Peripheral Registers pg209
@@ -24,12 +25,13 @@
 #define CONT_MOD_REG_START 		0x44e10000  // Address of the Control Module Registers pg210
 #define CONT_MOD_REG_LENGTH 	131072 		// Length of the CMR
 #define CONF_GPMC_A2_OFFSET		0x848		// Port 9, Pin 14 MUX
-
-
-int initialisePWM(bool enable) {
+//Initialise the PWM hardware. Takes period frequency and duty cycle
+int initialisePWM(uint16_t periodFreq, uint8_t dutyPercent) {
 
 	volatile uint32_t *MemMapAddressContMod; //mmap pointer for the Control Module Registers
 	int32_t MemoryFileDescriptor;
+	int32_t pwmFileDescriptor;
+	char buffer[8] = "110050";
 
 	//Create a file handle for the memory
 	MemoryFileDescriptor = open("/dev/mem", O_RDWR); //Establish connection between file and file descriptor as read/write
@@ -50,7 +52,8 @@ int initialisePWM(bool enable) {
 		return 1;
 	}
 	//Set PWM1 clock to enable
-	MemMapAddressContMod[CM_PER_EPWMSS1_CLKCTRL_OFFSET / sizeof (uint32_t)] = PWM_CLOCK_ENABLE;
+	MemMapAddressContMod[CM_PER_EPWMSS1_CLKCTRL_OFFSET / sizeof(uint32_t)] =
+			PWM_CLOCK_ENABLE;
 
 	//Open Control Module mmap from the memory file descriptor
 	//Open the map in read/write mode, shared=change the actual object, using file descripter from above and offseting to the register.
@@ -62,12 +65,26 @@ int initialisePWM(bool enable) {
 		return 1;
 	}
 	//Set Port 9 Pin 14 to ehrpwm1A_mux1
-	MemMapAddressContMod[CONF_GPMC_A2_OFFSET / sizeof (uint32_t)] = 0x6;
+	MemMapAddressContMod[CONF_GPMC_A2_OFFSET / sizeof(uint32_t)] = 0x6;
 
 	//Close the Control Module mmap
 	munmap((void *) MemMapAddressContMod, CONT_MOD_REG_LENGTH);
 
 	//Close the Memory File Descriptor
 	close(MemoryFileDescriptor);
+
+	pwmFileDescriptor = open("/sys/class/pwm/ehrpwm.1/:0/request", O_RDWR);
+	write(pwmFileDescriptor, &buffer[0], 1);
+	close(pwmFileDescriptor);
+	pwmFileDescriptor = open("/sys/class/pwm/ehrpwm.1/:0/run", O_RDWR);
+	write(pwmFileDescriptor, &buffer[0], 1);
+	close(pwmFileDescriptor);
+	pwmFileDescriptor = open("/sys/class/pwm/ehrpwm.1/:0/period_freq", O_RDWR);
+	write(pwmFileDescriptor, &buffer[1], 3);
+	close(pwmFileDescriptor);
+	pwmFileDescriptor = open("/sys/class/pwm/ehrpwm.1/:0/duty_percent", O_RDWR);
+	write(pwmFileDescriptor, &buffer[4], 2);
+	close(pwmFileDescriptor);
+
 	return 0;
 }
