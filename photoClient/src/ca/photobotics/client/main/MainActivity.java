@@ -6,102 +6,125 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import photobotics.socket.client.R;
-
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-	
-	EditText textOut;
-	TextView textIn;
+
+	EditText statusText;
+	TextView commandText;
+	static AsyncSocketConnect task;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-	
-	
-	textOut = (EditText) findViewById(R.id.status);
-	Button buttonSend = (Button) findViewById(R.id.takepic);
-	textIn = (TextView) findViewById(R.id.commandtxt);
-	buttonSend.setOnClickListener(buttonSendOnClickListener);
+		task = new AsyncSocketConnect();
+		task.execute();
+		statusText = (EditText) findViewById(R.id.status);
+		commandText = (TextView) findViewById(R.id.commandtxt);
+		// Button buttonSend = (Button) findViewById(R.id.takepic);
+		// buttonSend.setOnClickListener(buttonSendOnClickListener);
+		Button buttonSend = (Button) findViewById(R.id.sendcmd);
+		buttonSend.setOnClickListener(buttonPicClickListener);
 	}
-	
-}
 
-class AsyncSocketConnect extends AsyncTask<Void, Void, Void> {
+	public void takePic(View view) {
 
-	public static String serverip = "192.168.1.21";
-	public static int serverport = 8888;
-	Socket s;
-	public DataInputStream dis;
-	public DataOutputStream dos;
-	public int message;
+		statusText.setText("starting socket");
+		//AsyncSocketConnect task = new AsyncSocketConnect();
+		
+		task.SendDataToNetwork("please Work");
 
-	@Override
-	protected Void doInBackground(Void... params) {
+	}
 
-		try {
-			Log.i("AsyncTank", "doInBackgoung: Creating Socket");
-			s = new Socket(serverip, serverport);
-		} catch (Exception e) {
-			Log.i("AsyncTank", "doInBackgoung: Cannot create Socket");
+	private OnClickListener buttonSendOnClickListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			statusText.setText("Send");
+
 		}
-		if (s.isConnected()) {
+	};
+
+	private OnClickListener buttonPicClickListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			statusText.setText("Command");
+		}
+	};
+
+	private class AsyncSocketConnect extends AsyncTask<Void, Void, Void> {
+
+		String serverip = "192.168.7.2";
+		int serverport = 8888;
+		Socket socket;
+		public DataInputStream socketInputStream;
+		public DataOutputStream socketOutputStream;
+		public int message;
+
+		@Override
+		protected void onPreExecute() {
+			Log.i("AsyncSocketConnect",
+					"AsyncSocketConnet PreExecute is started");
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
 			try {
-				dis = (DataInputStream) s.getInputStream();
-				dos = (DataOutputStream) s.getOutputStream();
-				Log.i("AsyncTank",
-						"doInBackgoung: Socket created, Streams assigned");
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				Log.i("AsyncTank",
-						"doInBackgoung: Cannot assign Streams, Socket not connected");
-				e.printStackTrace();
+				Log.i("AsyncTank", "doInBackgoung: Creating Socket");
+				socket = new Socket(serverip, serverport);
+			} catch (Exception e) {
+				Log.i("AsyncTank", "doInBackgoung: Cannot create Socket");
 			}
-		} else {
-			Log.i("AsyncTank",
-					"doInBackgoung: Cannot assign Streams, Socket is closed");
-		}
+			if (socket.isConnected()) {
+				try {
 
-		return null;
-	}
+					socketInputStream = new DataInputStream(socket.getInputStream());
+					socketOutputStream = new DataOutputStream(socket.getOutputStream());
+					Log.i("AsyncTank",
+							"doInBackgoung: Socket created, Streams assigned");
 
-	public void writeToStream(double lat, double lon) {
-		try {
-			if (s.isConnected()) {
-				Log.i("AsynkTask", "writeToStream : Writing lat, lon");
-				dos.writeDouble(lat);
-				dos.writeDouble(lon);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					Log.i("AsyncTank",
+							"doInBackgoung: Cannot assign Streams, Socket not connected");
+					e.printStackTrace();
+				}
 			} else {
-				Log.i("AsynkTask",
-						"writeToStream : Cannot write to stream, Socket is closed");
+				Log.i("AsyncTank",
+						"doInBackgoung: Cannot assign Streams, Socket is closed");
 			}
-		} catch (Exception e) {
-			Log.i("AsynkTask", "writeToStream : Writing failed");
+			return null;
+			
+			
 		}
+		
+		public void SendDataToNetwork(String cmd) { //You run this from the main thread.
+            try {
+                if (socket.isConnected()) {
+                    Log.i("AsyncTask", "SendDataToNetwork: Writing received message to socket");
+                    socketOutputStream.write(cmd.getBytes());
+                } else {
+                    Log.i("AsyncTask", "SendDataToNetwork: Cannot send message. Socket is closed");
+                }
+            } catch (Exception e) {
+                Log.i("AsyncTask", "SendDataToNetwork: Message send failed. Caught an exception");
+            }
+        }
+		
+		
 	}
-
-	public int readFromStream() {
-		try {
-			if (s.isConnected()) {
-				Log.i("AsynkTask", "readFromStream : Reading message");
-				message = dis.readInt();
-			} else {
-				Log.i("AsynkTask",
-						"readFromStream : Cannot Read, Socket is closed");
-			}
-		} catch (Exception e) {
-			Log.i("AsynkTask", "readFromStream : Writing failed");
-		}
-		return message;
-	}
-
 }

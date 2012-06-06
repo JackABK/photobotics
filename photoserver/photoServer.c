@@ -18,17 +18,15 @@
 
 extern int initialisePWM(uint16_t, uint8_t);
 extern int initialiseSocket(void);
-//extern	int balls(char);
+
 extern int cameraFunction(int);
 
 int main(int argc, char* argv[]) {
 	int socketFileDescriptor = 0;
 	int n = 0;
 	char buffer[256];
-	initialisePWM(100, 50);
+	//initialisePWM(100, 50);
 	socketFileDescriptor = initialiseSocket();
-
-	cameraFunction('c');
 	fprintf(stderr, "camera done");
 	while (1) {
 		struct sockaddr_in clientName = { 0 };
@@ -47,11 +45,15 @@ int main(int argc, char* argv[]) {
 		/* handle the new connection request
 		 */
 		/* write out our message to the client */
+		while(1){
 		bzero(buffer, 256);
 		n = read(simpleChildSocket, buffer, 255);
+
+		//cameraFunction(atoi(buffer[4]));
 		fprintf(stderr, "this is n %d", n);
 		//if (n < 0) error("ERROR reading from socket");
-		fprintf(stderr, "Here is the message: %-10.10s", &buffer[1]);
+		fprintf(stderr, "Here is the message: %-10.10s", &buffer[0]);
+		}
 		close(simpleChildSocket);
 	}
 	close(socketFileDescriptor);

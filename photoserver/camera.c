@@ -64,7 +64,7 @@ int cameraFunction(int command) {
 
 	canon_enable_capture(canon, TRUE, canoncontext);
 
-	while (1) {
+
 		printf("ready to rock\n");
 
 		//i = getchar();
@@ -113,7 +113,7 @@ int cameraFunction(int command) {
 			return 0;
 
 		}
-	}
+
 	return 0;
 } //end of code
 

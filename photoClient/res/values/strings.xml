@@ -5,5 +5,8 @@
     <string name="app_name">PhotoClient</string>
     <string name="btn_cmd_pic">Picture</string>
     <string name="btn_cmd_exit">Exit</string>
+    <string name="btn_cmd_send">Send</string>
+    <string name="btn_cmd_status">Status</string>
+    <string name="status">status</string>
 
 </resources>

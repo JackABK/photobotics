@@ -18,6 +18,7 @@
             android:id="@+id/takepic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="takePic"
             android:text="@string/btn_cmd_pic" />
 
         <Button
@@ -27,36 +28,37 @@
             android:text="@string/btn_cmd_exit" />
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/sendcmd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="@string/btn_cmd_send" />
 
         <Button
-            android:id="@+id/button4"
+            android:id="@+id/getstatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="@string/btn_cmd_status" />
     </LinearLayout>
 
     <EditText
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <SeekBar
+        android:id="@+id/vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <SeekBar
+        android:id="@+id/horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
         android:id="@+id/commandtxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10" />
-
-    <TextView
-        android:id="@+id/status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="status" />
-
-    <EditText>
-    </EditText>
-
-    <SeekBar
-        android:id="@+id/seekBar1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:text="@string/status" />
 
 </LinearLayout>
